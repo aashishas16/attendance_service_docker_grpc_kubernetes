@@ -1,0 +1,8 @@
+Helm release: {{ .Release.Name }}
+
+To get access to the HTTP service (Minikube):
+  minikube service {{ .Release.Name }}-app -n {{ .Release.Namespace }} --url
+
+Example:
+  BASE_URL=$(minikube service {{ .Release.Name }}-app -n {{ .Release.Namespace }} --url)
+  curl -X POST -H "Content-Type: application/json" -d '{"user_id":"1","username":"Ravi"}' "$BASE_URL/v1/checkin"

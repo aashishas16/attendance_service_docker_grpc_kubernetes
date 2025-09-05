@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Release.Name }}-test-connection"
+  labels:
+    app: "{{ .Release.Name }}-test"
+  annotations:
+    "helm.sh/hook": test
+spec:
+  restartPolicy: Never
+  containers:
+    - name: curl
+      image: curlimages/curl:8.1.2
+      command:
+        - sh
+        - -c
+        - |
+          # Try to reach the HTTP service; return 0 if success
+          for i in $(seq 1 30); do
+            if curl -sSf http://{{ .Release.Name }}-app:{{ .Values.app.httpPort }}/v1/attendance; then
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+
+
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: "{{ include "mychart.fullname" . }}-test-connection"
+#   labels:
+#     {{- include "mychart.labels" . | nindent 4 }}
+#   annotations:
+#     "helm.sh/hook": test
+# spec:
+#   containers:
+#     - name: wget
+#       image: busybox
+#       command: ['wget']
+#       args: ['{{ include "mychart.fullname" . }}:{{ .Values.service.port }}']
+#   restartPolicy: Never

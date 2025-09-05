@@ -1,0 +1,58 @@
+
+version: "3.9"
+
+services:
+  # MongoDB Database Service
+  mongo:
+    image: mongo:6.0
+    container_name: mongo-db
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: attendance_db
+
+  # Attendance Go Application Service
+  app:
+    build: .
+    container_name: attendance-app
+    restart: always
+    ports:
+      - "50051:50051"  # gRPC
+      - "8080:8080"    # HTTP Gateway
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: mongodb://mongo:27017/attendance_db
+
+volumes:
+  mongo-data:
+
+
+# services:
+#   # The MongoDB Database Service
+#   mongo:
+#     image: mongo:latest
+#     container_name: mongo-db
+#     ports:
+#       - "27017:27017" # Map container port to host port
+#     volumes:
+#       - mongo-data:/data/db # Persist data even if the container is removed
+
+#   # Your Go Application Service
+#   app:
+#     build: . # Build the image from the Dockerfile in the current directory
+#     container_name: attendance-app
+#     ports:
+#       - "50051:50051" # gRPC port
+#       - "8080:8080"   # HTTP gateway port
+#     depends_on:
+#       - mongo # Tell Docker to start the mongo service before starting the app
+#     environment:
+#       # We will add an environment variable for the connection string
+#       - MONGO_URI=mongodb://mongo:27017
+
+# volumes:
+#   mongo-data: # Define the volume for data persistence

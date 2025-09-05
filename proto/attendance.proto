@@ -1,0 +1,158 @@
+syntax = "proto3";
+
+package attendance;
+
+import "google/api/annotations.proto";
+
+option go_package = "attendance/proto";
+
+// --- Request Messages ---
+
+message CheckInRequest {
+    string user_id = 1;
+    string username = 2;
+}
+
+message CheckOutRequest {
+    string record_id = 1; // <-- FIXED: use record_id, not user_id
+}
+
+message GetAttendanceRequest {
+    string user_id = 1;
+}
+
+message GetAllAttendanceRequest {}
+
+// --- Response Messages ---
+
+message AttendanceRecordResponse {
+    string id = 1;
+    string user_id = 2;
+    string username = 3;
+    string checkin_time = 4;
+    string checkout_time = 5;
+    string status_message = 6;
+}
+
+message GetAllAttendanceResponse {
+    repeated AttendanceRecordResponse records = 1;
+}
+
+// --- Service Definition ---
+
+service AttendanceService {
+    rpc CheckIn(CheckInRequest) returns (AttendanceRecordResponse) {
+        option (google.api.http) = {
+            post: "/v1/checkin"
+            body: "*"
+        };
+    }
+
+    rpc CheckOut(CheckOutRequest) returns (AttendanceRecordResponse) {
+        option (google.api.http) = {
+            put: "/v1/checkout/{record_id}"  // <-- FIXED
+            body: "*"
+        };
+    }
+
+    rpc GetAttendance(GetAttendanceRequest) returns (AttendanceRecordResponse) {
+        option (google.api.http) = {
+            get: "/v1/attendance/{user_id}"
+        };
+    }
+
+    rpc GetAllAttendance(GetAllAttendanceRequest) returns (GetAllAttendanceResponse) {
+        option (google.api.http) = {
+            get: "/v1/attendance"
+        };
+    }
+}
+
+
+
+
+
+
+
+// syntax = "proto3";
+
+// package attendance;
+
+// import "google/api/annotations.proto";
+
+// option go_package = "attendance/proto";
+
+// // --- Request Messages ---
+
+// // The request message for checking in.
+// message CheckInRequest {
+//     string user_id = 1;
+//     string username = 2;
+// }
+
+// // The request message for checking out. The record_id is the unique ID of the attendance record.
+// message CheckOutRequest {
+//     string user_id = 1;
+// }
+
+// // The request message for getting a user's latest attendance.
+// message GetAttendanceRequest {
+//     string user_id = 1;
+// }
+
+// // The request message for getting all attendance records (it requires no parameters).
+// message GetAllAttendanceRequest {}
+
+
+// // --- Response Messages ---
+
+// // A single attendance record response.
+// message AttendanceRecordResponse {
+//     string id = 1;
+//     string user_id = 2;
+//     string username = 3;
+//     string checkin_time = 4;
+//     string checkout_time = 5;
+//     string status_message = 6;
+// }
+
+// // The response message containing a list of all attendance records.
+// message GetAllAttendanceResponse {
+//     repeated AttendanceRecordResponse records = 1;
+// }
+
+
+// // --- Service Definition ---
+
+// // The attendance service definition with RESTful mappings.
+// service AttendanceService {
+//     // CheckIn maps to POST /v1/checkin
+//     rpc CheckIn(CheckInRequest) returns (AttendanceRecordResponse) {
+//         option (google.api.http) = {
+//             post: "/v1/checkin"
+//             body: "*"
+//         };
+//     }
+
+//     // CheckOut maps to PUT /v1/checkout/{record_id}
+//     rpc CheckOut(CheckOutRequest) returns (AttendanceRecordResponse) {
+//         option (google.api.http) = {
+//             put: "/v1/checkout/{user_id}"
+//             body: "*"
+//         };
+//     }
+
+//     // GetAttendance maps to GET /v1/attendance/{user_id}
+//     rpc GetAttendance(GetAttendanceRequest) returns (AttendanceRecordResponse) {
+//         option (google.api.http) = {
+//             get: "/v1/attendance/{user_id}"
+//         };
+//     }
+
+//     // GetAllAttendance maps to GET /v1/attendance
+//     rpc GetAllAttendance(GetAllAttendanceRequest) returns (GetAllAttendanceResponse) {
+//         option (google.api.http) = {
+//             get: "/v1/attendance"
+//         };
+//     }
+// }

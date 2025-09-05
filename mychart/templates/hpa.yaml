@@ -1,0 +1,54 @@
+{{- if .Values.hpa.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-app-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-app
+  minReplicas: {{ .Values.hpa.minReplicas }}
+  maxReplicas: {{ .Values.hpa.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+{{- end }}
+
+
+# {{- if .Values.autoscaling.enabled }}
+# apiVersion: autoscaling/v2
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: {{ include "mychart.fullname" . }}
+#   labels:
+#     {{- include "mychart.labels" . | nindent 4 }}
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: {{ include "mychart.fullname" . }}
+#   minReplicas: {{ .Values.autoscaling.minReplicas }}
+#   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+#   metrics:
+#     {{- if .Values.autoscaling.targetCPUUtilizationPercentage }}
+#     - type: Resource
+#       resource:
+#         name: cpu
+#         target:
+#           type: Utilization
+#           averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+#     {{- end }}
+#     {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
+#     - type: Resource
+#       resource:
+#         name: memory
+#         target:
+#           type: Utilization
+#           averageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
+#     {{- end }}
+# {{- end }}

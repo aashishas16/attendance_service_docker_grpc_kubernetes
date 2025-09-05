@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-mongo
+  labels:
+    app: attendance-mongo
+    release: {{ .Release.Name }}
+spec:
+  serviceName: {{ .Release.Name }}-mongo
+  replicas: 1
+  selector:
+    matchLabels:
+      app: attendance-mongo
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: attendance-mongo
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: mongodb
+          image: "{{ .Values.mongo.image.repository }}:{{ .Values.mongo.image.tag }}"
+          imagePullPolicy: {{ .Values.mongo.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.mongo.port }}
+              name: mongo
+          env:
+            - name: MONGO_INITDB_DATABASE
+              value: "{{ .Values.mongo.database }}"
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+          resources: {{- toYaml .Values.resources.mongo | nindent 12 }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        {{- if .Values.mongo.persistence.storageClassName }}
+        storageClassName: "{{ .Values.mongo.persistence.storageClassName }}"
+        {{- end }}
+        resources:
+          requests:
+            storage: "{{ .Values.mongo.persistence.size }}"
