@@ -33,14 +33,13 @@ A simple yet robust **attendance management service** built with **Go**, **gRPC*
 
 ---
 
-## Architecture
 
-```mermaid
+
+##🏗️ Architecture
 flowchart LR
   C[Client / curl / Browser] -- REST JSON --> G[HTTP Gateway (grpc-gateway)]
   G -- gRPC --> S[gRPC Server (Go)]
   S -- MongoDB Driver --> DB[(MongoDB)]
-```
 
 * **Clients** send REST requests to the **HTTP Gateway**.
 * The **Gateway** translates REST → gRPC and calls the **Go gRPC server**.
