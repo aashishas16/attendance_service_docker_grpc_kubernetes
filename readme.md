@@ -1,3 +1,221 @@
+Go gRPC Attendance Service
+A simple yet robust attendance management service built with Go, gRPC, MongoDB, and a RESTful JSON gateway. This service allows for checking in, checking out, and retrieving attendance records for users. It serves as a comprehensive example of a modern microservice, demonstrating best practices for creating a scalable and maintainable backend system.
+
+🏛️ System Architecture
+The service operates with a simple yet powerful architecture. All external REST API calls from clients (like curl or a web browser) are received by the HTTP Gateway. The gateway translates these requests into the gRPC format and forwards them to the main Go application server. The server contains the core business logic, interacts with the MongoDB database, and then sends the response back through the same path.
+
+📂 Project Structure
+A brief overview of the key files and directories in this project.
+
+GO_ATTENDANCE_SERVICE/
+├── googleapis/                 # Google API proto definitions (dependency for gRPC-Gateway)
+├── mychart/                    # Helm chart for Kubernetes deployment
+├── proto/                      # Protobuf files and generated Go code
+│   ├── attendance.proto        # The gRPC service definition
+│   ├── attendance.pb.go        # Generated Go code for messages
+│   ├── attendance_grpc.pb.go   # Generated Go code for the gRPC service client/server
+│   └── attendance.pb.gw.go     # Generated Go code for the REST <-> gRPC gateway
+├── attendance-deployment.yaml  # Kubernetes manifest for the attendance service
+├── mongo-deployment.yaml       # Kubernetes manifest for the MongoDB instance
+├── docker-compose.yml          # Docker Compose to run MongoDB + service locally
+├── Dockerfile                  # Instructions to build the attendance service Docker image
+├── go.mod                      # Go module definition file
+├── go.sum                      # Go dependencies lock file
+├── main.go                     # Main application: starts the gRPC server and HTTP gateway
+└── readme.md                   # This README file
+
+✨ Features
+User Check-In & Check-Out: Record attendance with precise timestamps.
+
+Numeric IDs: Uses auto-incrementing integer IDs for records (limited to 1-999).
+
+Timezone Handling: Stores all data in UTC and displays it in Indian Standard Time (IST).
+
+Dual API Support: Exposes a high-performance gRPC service and a user-friendly JSON REST gateway.
+
+Database Integration: Persists all data in a MongoDB database.
+
+Flexible Data Retrieval: Fetch the latest record for a specific user or a complete list of all records.
+
+⚙️ Prerequisites
+Before you begin, ensure you have the following installed on your system:
+
+Go: Version 1.18 or higher
+
+Protobuf Compiler (protoc): Installation Guide
+
+Go gRPC Plugins:
+
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+go install [github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest](https://github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest)
+
+Docker & Docker Compose
+
+Git
+
+curl for API testing
+
+🚀 Running the Project
+You can run this project locally, with Docker Compose, or on Kubernetes.
+
+1. Run Locally (Without Docker)
+Start MongoDB (either locally or via a simple Docker command):
+
+docker run -d --name mongo-db -p 27017:27017 mongo:6.0
+
+Run the Go Service:
+
+go mod tidy
+go run main.go
+
+The service is now available:
+
+gRPC Server: localhost:50051
+
+HTTP Gateway: localhost:8080
+
+2. Run with Docker Compose
+This is the simplest way to run both the application and the database together.
+
+Build and Start Services:
+
+docker-compose up --build -d
+
+View Logs:
+
+docker-compose logs -f attendance-app
+
+Stop Services:
+
+docker-compose down
+
+3. Run on Kubernetes (using Minikube)
+Apply Deployments:
+
+kubectl apply -f mongo-deployment.yaml
+kubectl apply -f attendance-deployment.yaml
+
+Port-Forward for Local Access:
+
+kubectl port-forward svc/attendance-svc 8080:8080
+
+📡 API Usage (curl Commands)
+All curl commands should be directed to the HTTP gateway on localhost:8080.
+
+1. Check-In an Employee
+Method: POST
+
+Endpoint: /v1/checkin
+
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"user_id": "emp_local_01", "username": "Aashish"}' \
+  http://localhost:8080/v1/checkin
+
+Sample Response:
+
+{
+  "id": "1",
+  "userId": "emp_local_01",
+  "username": "Aashish",
+  "checkinTime": "2025-09-05 10:26:00 IST",
+  "statusMessage": "User checked in successfully."
+}
+
+2. Get a Single User's Latest Attendance
+Method: GET
+
+Endpoint: /v1/attendance/{user_id}
+
+# Replace 'emp_local_01' with the user ID you want to find
+curl -X GET http://localhost:8080/v1/attendance/emp_local_01
+
+Sample Response:
+
+{
+  "id": "1",
+  "userId": "emp_local_01",
+  "username": "Aashish",
+  "checkinTime": "2025-09-05 10:26:00 IST",
+  "statusMessage": "Record found."
+}
+
+3. Check-Out an Employee
+Method: PUT
+
+Endpoint: /v1/checkout/{record_id}
+
+# Replace '1' with the actual ID of the record you want to check out
+curl -X PUT -H "Content-Type: application/json" \
+  -d '{}' \
+  http://localhost:8080/v1/checkout/1
+
+Sample Response:
+
+{
+  "id": "1",
+  "userId": "emp_local_01",
+  "username": "Aashish",
+  "checkinTime": "2025-09-05 10:26:00 IST",
+  "checkoutTime": "2025-09-05 18:30:00 IST",
+  "statusMessage": "User checked out successfully."
+}
+
+4. Get All Attendance Records
+Method: GET
+
+Endpoint: /v1/attendance
+
+curl -X GET http://localhost:8080/v1/attendance
+
+Sample Response:
+
+{
+  "records": [
+    {
+      "id": "1",
+      "userId": "emp_local_01",
+      "username": "Aashish",
+      "checkinTime": "2025-09-05 10:26:00 IST",
+      "checkoutTime": "2025-09-05 18:30:00 IST",
+      "statusMessage": "Record retrieved."
+    }
+  ]
+}
+
+💻 Development
+Regenerating Protobuf Code
+This is a critical step. If you make any changes to proto/attendance.proto, you must regenerate the Go client, server, and gateway files. Run the following command from the project's root directory:
+
+protoc \
+  --proto_path=. \
+  --proto_path=googleapis \
+  --go_out=. \
+  --go-grpc_out=. \
+  --grpc-gateway_out=. \
+  proto/attendance.proto
+
+🗄️ Inspecting the Database
+To manually check the data in MongoDB, you can use the Mongo Shell.
+
+Connect to the Container:
+
+docker exec -it mongo-db mongosh
+
+Run Queries:
+
+// Switch to the correct database
+use attendance_db
+
+// View all records in a readable format
+db.records.find().pretty()
+
+
+
+
+
+
+
 Perfect 🙌 Thanks for sharing your project structure.
 I’ll prepare a **`README.md`** for you that:
 
