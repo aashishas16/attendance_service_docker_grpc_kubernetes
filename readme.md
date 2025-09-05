@@ -1,7 +1,3 @@
-Here’s a complete, polished **README.md** you can drop into your GitHub repo. It’s step-by-step, production-ready, and includes quick start, Docker, Kubernetes, gRPC-Gateway, protoc generation, API examples, and troubleshooting.
-
----
-
 # Go gRPC Attendance Service
 
 A simple yet robust **attendance management service** built with **Go**, **gRPC**, **MongoDB**, and a **REST JSON gateway**. It supports **check-in**, **check-out**, and **retrieval** of attendance records. The project demonstrates modern microservice best practices: clean architecture, containerization, and cloud-native deployment.
@@ -471,6 +467,3 @@ docker rm -f attendance-app
 MIT — feel free to use, modify, and share.
 
 ---
-
-**Happy shipping! 🚀**
-If you want, I can also add a small **architecture diagram image** or refine the **Helm chart** in `mychart/` to match this setup.
